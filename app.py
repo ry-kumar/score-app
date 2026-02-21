@@ -20,13 +20,13 @@ def update_score():
     return jsonify(game_data)
 
 # API endpoint to get current scores
-@app.route('/api/get_score', methods=['GET'])
+@app.route('/get_score', methods=['GET'])
 def get_score():
     return jsonify(game_data)
 
 
 # API endpoint to reset scores
-@app.route('/api/reset_score', methods=['POST'])
+@app.route('/reset_score', methods=['POST'])
 def reset_score():
     global game_data
     game_data = {"team_a": 0, "team_b": 0}
