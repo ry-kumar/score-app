@@ -10,7 +10,7 @@ def index():
     return render_template('index.html')
 
 # This is the API endpoint that accepts inputs
-@app.route('/api/update_score', methods=['POST'])
+@app.route('/update_score', methods=['POST'])
 def update_score():
     global game_data
     data = request.json
