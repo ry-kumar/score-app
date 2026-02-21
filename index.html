@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scoreboard v1</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; }
+        .scoreboard { display: flex; justify-content: center; gap: 50px; font-size: 2em; margin-bottom: 30px; }
+        .team { border: 2px solid #333; padding: 20px; border-radius: 10px; }
+        input { padding: 10px; font-size: 1em; width: 60px; }
+        button { padding: 10px 20px; font-size: 1em; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Live Scoreboard (v1)</h1>
+    
+    <div class="scoreboard">
+        <div class="team">
+            <h3>Team A</h3>
+            <div id="scoreA">0</div>
+        </div>
+        <div class="team">
+            <h3>Team B</h3>
+            <div id="scoreB">0</div>
+        </div>
+    </div>
+
+    <div>
+        <input type="number" id="inputA" placeholder="A">
+        <input type="number" id="inputB" placeholder="B">
+        <button onclick="updateScores()">Update API</button>
+    </div>
+<button onclick="resetScores()" style="background: red; margin-left: 10px;">Reset Score</button>
+
+<script>
+    // ... existing updateScores function ...
+
+    async function resetScores() {
+        const response = await fetch('/api/reset_score', { method: 'POST' });
+        const data = await response.json();
+        document.getElementById('scoreA').innerText = data.team_a;
+        document.getElementById('scoreB').innerText = data.team_b;
+    }
+</script>
+
+
+
+    <script>
+        // JS function to send data to the Python API
+        async function updateScores() {
+            const scoreA = document.getElementById('inputA').value;
+            const scoreB = document.getElementById('inputB').value;
+
+            const response = await fetch('/api/update_score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ team_a: scoreA, team_b: scoreB })
+            });
+
+            const data = await response.json();
+            // Update the display immediately
+            document.getElementById('scoreA').innerText = data.team_a;
+            document.getElementById('scoreB').innerText = data.team_b;
+        }
+    </script>
+</body>
+</html>
