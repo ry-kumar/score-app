@@ -1,62 +1,84 @@
-
-# 2. Save it to a file
-
-docker save score-app:v2 -o score-app-v2.tar
-
-
-
-# 3. Load it into Minikube
-
-minikube image load score-app-v2.tar
-
- 
-docker build -t score-app:v1 .
-
-minikube service score-service -n dev
-
-kubectl set image deployment/score-app score-app=score-app:v2 -n dev
-
-
-Create a Staging environment. 
-
-kubectl create namespace staging
-
-Creating a minikube service for staging. 
-minikube service score-service -n staging
+| Step                 | Command                                            |
+| -------------------- | -------------------------------------------------- |
+| Create KIND cluster  | `kind create cluster --name score-api`             |
+| Build Docker image   | `docker build -t score:v1 .`                       |
+| Load image into KIND | `kind load docker-image score:v1 --name score-api` |
+| Deploy app           | `kubectl apply -f score-k8s.yaml`                  |
+| Verify pods          | `kubectl get pods -o wide`                         |
+| Access app           | `http://localhost:30007` or via `port-forward`     |
 
 
 
- 956  docker build . 
-  957  docker run -p 5000:5000 score_api
-  958  minikube image load score-app-v2.tar
-  959  kubectl set image deployment/score-app score-app=score-app:v2 -n dev
-  960  kubectl set image deployment/score-app score-app=score-app:v2
+Create the KIND cluster
+
+Example:
+```
+kind create cluster --name score-api --config kind-config.yaml
+```
+Your kind-config.yaml can define multiple nodes if you want multi-node testing.
+
+Build your Docker image
+```
+docker build -t score:v1 .
+```
+Make sure your Dockerfile starts FastAPI with 0.0.0.0:5000
+
+Example CMD in Dockerfile:
+```
+uvicorn main:app --host 0.0.0.0 --port 5000
+```
+
+
+✅ Steps to Apply and Access
+
+Load your image into KIND
+```
+kind load docker-image score:v1 --name score-api
+```
+Apply the YAML
+```
+kubectl apply -f score-k8s.yaml
+```
+Check pods
+```
+kubectl get pods -o wide
+```
+You should see Running with IP on one of the worker nodes.
+
+Access your API locally
+```
+http://localhost:30007
+```
+FastAPI must be listening on 0.0.0.0:5000 inside the container.
+In Dockerfile, your CMD should be:
+```
+uvicorn main:app --host 0.0.0.0 --port 5000
+```
+🔹 Optional — Port Forwarding (Even Cleaner)
+
+Instead of NodePort, you can also do:
+```
+kubectl port-forward service/score-service 8080:80
+```
+Then open:
+```
+http://localhost:8080
+```
+This avoids choosing NodePort manually and is often preferred in CI/CD testing.
 
 
 
-  | Tool     | What You Do                               |
-| -------- | ----------------------------------------- |
-| Minikube | `eval $(minikube docker-env)` → build     |
-| kind     | `docker build` → `kind load docker-image` |
+***********************************************************
+-----------------------------------------------------------
 
+🔹 Optional — Port Forwarding (Even Cleaner)
 
-
-
-kind create cluster --name score-api --config kind-3node.yaml 
-
-kubectl config current-context
-kind-score-api
-
-yaswanthkumar@Yaswanths-MacBook-Pro score_api % kubectl config get-contexts
-
-kubectl config get-contexts
-CURRENT   NAME                                                  CLUSTER                                               AUTHINFO                                              NAMESPACE
-          Democluster                                           Democluster                                           Democluster                                           default
-          arn:aws:eks:us-east-1:799363008941:cluster/ToDo-App   arn:aws:eks:us-east-1:799363008941:cluster/ToDo-App   arn:aws:eks:us-east-1:799363008941:cluster/ToDo-App   
-          docker-desktop                                        docker-desktop                                        docker-desktop                                        
-          kind-dme-container-in-k8s-pod-2                       kind-dme-container-in-k8s-pod-2                       kind-dme-container-in-k8s-pod-2                       
-          kind-nginx-ingress                                    kind-nginx-ingress                                    kind-nginx-ingress                                    
-*         kind-score-api                                        kind-score-api                                        kind-score-api                                        
-          minikube                                              minikube                                              minikube                                              default
-          practice-cluster                                      practice-cluster                                      practice-cluster                                      default
-
+Instead of NodePort, you can also do:
+```
+kubectl port-forward service/score-service 8080:80
+```
+Then open:
+```
+http://localhost:8080
+```
+This avoids choosing NodePort manually and is often preferred in CI/CD testing.

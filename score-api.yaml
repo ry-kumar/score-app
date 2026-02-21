@@ -1,0 +1,47 @@
+# -----------------------------
+# Score API Deployment + Service
+# -----------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: score-deployment
+  labels:
+    app: score
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: score
+  template:
+    metadata:
+      labels:
+        app: score
+    spec:
+      containers:
+        - name: score-container
+          image: score:v1           # Your local image
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000   # Must match FastAPI port
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: score-service
+spec:
+  type: NodePort                  # Works reliably in KIND
+  selector:
+    app: score
+  ports:
+    - name: http
+      port: 80                    # Exposed port internally
+      targetPort: 5000            # Port your app listens on
+      nodePort: 30007             # Access via localhost:30007
